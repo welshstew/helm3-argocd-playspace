@@ -1,0 +1,83 @@
+---
+# Source: myhelmapp/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: thingy-myhelmapp
+  labels:
+
+    helm.sh/chart: myhelmapp-0.1.0
+    app.kubernetes.io/name: myhelmapp
+    app.kubernetes.io/instance: thingy
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: myhelmapp/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: thingy-myhelmapp
+  labels:
+    helm.sh/chart: myhelmapp-0.1.0
+    app.kubernetes.io/name: myhelmapp
+    app.kubernetes.io/instance: thingy
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: myhelmapp
+    app.kubernetes.io/instance: thingy
+---
+# Source: myhelmapp/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thingy-myhelmapp
+  labels:
+    helm.sh/chart: myhelmapp-0.1.0
+    app.kubernetes.io/name: myhelmapp
+    app.kubernetes.io/instance: thingy
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: myhelmapp
+      app.kubernetes.io/instance: thingy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: myhelmapp
+        app.kubernetes.io/instance: thingy
+    spec:
+      serviceAccountName: thingy-myhelmapp
+      securityContext:
+        {}
+      containers:
+        - name: myhelmapp
+          securityContext:
+            {}
+          image: "nginx:1.16.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+
